@@ -4,14 +4,27 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import pandas as pd
 import re
+import os
 
 # Initialize Spark session
 spark = SparkSession.builder.appName("AdmissionInquiryAnalysis").getOrCreate()
 
 # Load the dataset
-file_path = "C:/Users/molaw/code/PA1/input/FILE1.csv"  # Adjust this as necessary
+file_path = "C:/Users/molaw/code/PA1/input/FILE1.csv"  
 df_spark = spark.read.option("header", True).option("inferSchema", True).csv(file_path)
 
+#create distinct value files for each column to do data analysis
+"""
+# Fetch distinct values from each column and save them as CSV files
+for column in df_spark.columns:
+    # Get distinct values for the column
+    distinct_values = df_spark.select(column).distinct().orderBy(column)
+    
+    # Save the distinct values to a CSV file
+    output_file = os.path.join("C:/Users/molaw/code/PA1/output/", f"_distinct_{column}.csv")
+    distinct_values.write.option("header", True).csv(output_file)
+    print(f"Distinct values for column '{column}' saved to '{output_file}'")
+"""
 # Convert Spark DataFrame to Pandas DataFrame
 df_pandas = df_spark.toPandas()
 
@@ -42,7 +55,7 @@ def preprocess_dataframe(df):
             df.at[index, "ID"] = -1  # Replace invalid IDs with -1
         if "2nd last Comment" in row and isinstance(row["2nd last Comment"], str):
             formatted_value = row["2nd last Comment"].replace("\\", "").replace("\"", "")
-            formatted_value = formatted_value.replace("capture_request_id:", "capture_request_id:")
+           # formatted_value = formatted_value.replace("capture_request_id:", "capture_request_id:")
             df.at[index, "2nd last Comment"] = formatted_value
         if "Applicant Name" in row and isinstance(row["Applicant Name"], str):
             value = row["Applicant Name"].lower()
